@@ -4,33 +4,44 @@ import Hls from "hls.js";
 interface VideoBackgroundProps {
   src?: string;
   className?: string;
+  preload?: "auto" | "metadata" | "none";
 }
 
-export const VideoBackground = ({ src, className = "" }: VideoBackgroundProps) => {
+export const VideoBackground = ({
+  src,
+  className = "",
+  preload = "auto",
+}: VideoBackgroundProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const isHlsSource = Boolean(src?.endsWith(".m3u8"));
 
   useEffect(() => {
-    if (!src || !videoRef.current) return;
+    if (!src || !videoRef.current || !isHlsSource) return;
 
     const video = videoRef.current;
 
-    if (Hls.isSupported() && src.endsWith(".m3u8")) {
+    if (Hls.isSupported()) {
       const hls = new Hls();
       hls.loadSource(src);
       hls.attachMedia(video);
-    } else {
-      video.src = src;
+      return () => hls.destroy();
     }
-  }, [src]);
+
+    video.src = src;
+  }, [isHlsSource, src]);
 
   return (
     <video
       ref={videoRef}
+      src={isHlsSource ? undefined : src}
       autoPlay
       muted
       loop
       playsInline
-      className={`w-full h-full object-cover ${className}`}
+      preload={preload}
+      aria-hidden="true"
+      disablePictureInPicture
+      className={`h-full w-full object-cover ${className}`}
     />
   );
 };

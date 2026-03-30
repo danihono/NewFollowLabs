@@ -125,9 +125,7 @@ export const Explorations = () => {
             A space for creative experiments, motion studies, and visual explorations.
           </p>
           
-          <Button 
-            className="rounded-full px-8 h-14 bg-transparent border border-white/10 hover:border-[#ea4c89] group transition-all duration-300"
-          >
+          <Button variant="outline" className="group h-14 px-8 [--button-border:rgba(232,175,72,0.28)]">
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full bg-[#ea4c89] flex items-center justify-center">
                 <svg viewBox="0 0 24 24" className="w-3 h-3 fill-white">
@@ -197,7 +195,7 @@ export const Explorations = () => {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="absolute top-6 right-6 text-white hover:bg-white/10"
+              className="absolute top-6 right-6 text-white [--button-border:rgba(255,255,255,0.16)] [--button-core:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))]"
               onClick={() => setSelectedImage(null)}
             >
               <X className="w-6 h-6" />

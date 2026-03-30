@@ -4,25 +4,28 @@ import { ArrowRight } from "lucide-react";
 
 export const FinalCTA = () => {
   return (
-    <section className="py-32 px-6 relative overflow-hidden">
-      {/* Darker version of environment */}
-      <div className="absolute inset-0 bg-black -z-10" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/5 blur-[120px] rounded-full -z-10" />
-      
-      <div className="max-w-4xl mx-auto text-center">
+    <section id="user" className="relative overflow-hidden px-6 py-32">
+      <div className="absolute inset-0 -z-10 bg-black" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(232,175,72,0.14),transparent_32%),linear-gradient(180deg,rgba(9,10,15,0.84),rgba(5,6,10,0.96))]" />
+      <div className="absolute left-1/2 top-1/2 -z-10 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/6 blur-[120px]" />
+
+      <div className="mx-auto max-w-4xl text-center">
         <FadeUp>
-          <h2 className="text-4xl md:text-7xl font-medium tracking-tight mb-10 leading-tight">
+          <h2 className="mb-10 text-4xl leading-tight font-medium tracking-tight md:text-7xl">
             Construa um sistema que <span className="text-serif-italic">cresce sozinho</span>
           </h2>
         </FadeUp>
 
         <FadeUp delay={0.2}>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" className="bg-white text-black hover:bg-white/90 rounded-full px-10 h-16 text-lg group">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Button
+              size="lg"
+              className="group h-16 px-10 text-lg shadow-[0_26px_60px_rgba(232,175,72,0.2)]"
+            >
               Começar agora
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
-            <Button size="lg" variant="outline" className="rounded-full px-10 h-16 text-lg border-white/10 hover:bg-white/5">
+            <Button size="lg" variant="outline" className="h-16 px-10 text-lg">
               Agendar conversa
             </Button>
           </div>

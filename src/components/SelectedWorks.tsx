@@ -3,67 +3,64 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const projects = [
-  { 
-    slug: "automotive-motion", 
-    title: "Automotive Motion", 
-    image: "https://picsum.photos/seed/auto/800/600?grayscale", 
-    gradient: "from-violet-500 via-fuchsia-400/60 via-indigo-500/60 to-transparent",
-    span: "md:col-span-7"
+  {
+    slug: "automotive-motion",
+    title: "Automotive Motion",
+    image: "/travessia.png",
+    gradient: "from-black/35 via-black/10 to-transparent",
+    span: "md:col-span-7",
   },
-  { 
-    slug: "urban-architecture", 
-    title: "Urban Architecture", 
-    image: "https://picsum.photos/seed/urban/800/600?grayscale", 
+  {
+    slug: "urban-architecture",
+    title: "Urban Architecture",
+    image: "https://picsum.photos/seed/urban/800/600?grayscale",
     gradient: "from-sky-500 via-blue-400/60 to-transparent",
-    span: "md:col-span-5"
+    span: "md:col-span-5",
   },
-  { 
-    slug: "human-perspective", 
-    title: "Human Perspective", 
-    image: "https://picsum.photos/seed/human/800/600?grayscale", 
+  {
+    slug: "human-perspective",
+    title: "Human Perspective",
+    image: "https://picsum.photos/seed/human/800/600?grayscale",
     gradient: "from-emerald-500 via-emerald-300/60 via-teal-500/60 to-transparent",
-    span: "md:col-span-5"
+    span: "md:col-span-5",
   },
-  { 
-    slug: "brand-identity", 
-    title: "Brand Identity", 
-    image: "https://picsum.photos/seed/brand/800/600?grayscale", 
+  {
+    slug: "brand-identity",
+    title: "Brand Identity",
+    image: "https://picsum.photos/seed/brand/800/600?grayscale",
     gradient: "from-amber-500 via-amber-300/60 via-orange-500/60 to-transparent",
-    span: "md:col-span-7"
+    span: "md:col-span-7",
   },
 ];
 
-const ProjectCard = ({ project, index }: { project: typeof projects[0], index: number }) => {
+const ProjectCard = ({ project }: { project: (typeof projects)[number] }) => {
   return (
     <>
-      {/* Background Image */}
       <img
         src={project.image}
         alt={project.title}
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         referrerPolicy="no-referrer"
       />
 
-      {/* Halftone Overlay */}
-      <div 
-        className="absolute inset-0 opacity-20 mix-blend-multiply pointer-events-none"
-        style={{ 
-          backgroundImage: `radial-gradient(circle, #000 1px, transparent 1px)`,
-          backgroundSize: '4px 4px'
+      <div
+        className="pointer-events-none absolute inset-0 opacity-20 mix-blend-multiply"
+        style={{
+          backgroundImage: "radial-gradient(circle, #000 1px, transparent 1px)",
+          backgroundSize: "4px 4px",
         }}
       />
 
-      {/* Gradient Overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-40 group-hover:opacity-60 transition-opacity duration-500`} />
+      <div
+        className={`absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-40 transition-opacity duration-500 group-hover:opacity-60`}
+      />
 
-      {/* Hover State */}
-      <div className="absolute inset-0 bg-bg/70 backdrop-blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-        {/* Animated Gradient Border Pill */}
-        <div className="relative p-[1px] rounded-full overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-accent via-white to-accent animate-[spin_3s_linear_infinite]" />
-          <div className="relative bg-white px-6 py-2 rounded-full flex items-center gap-2">
-            <span className="text-black text-sm font-medium">
-              View — <span className="font-serif italic">{project.title}</span>
+      <div className="absolute inset-0 flex items-center justify-center bg-bg/70 opacity-0 backdrop-blur-lg transition-all duration-500 group-hover:opacity-100">
+        <div className="relative overflow-hidden rounded-full p-[1px]">
+          <div className="absolute inset-0 animate-[spin_3s_linear_infinite] bg-gradient-to-r from-[#533517] via-[#feeaa5] to-[#c49746]" />
+          <div className="relative flex items-center gap-2 rounded-full border border-[rgba(232,175,72,0.28)] bg-[rgba(var(--toolbar-rgb),0.76)] px-6 py-2 text-foreground backdrop-blur-xl">
+            <span className="text-sm font-medium">
+              View - <span className="font-serif italic">{project.title}</span>
             </span>
           </div>
         </div>
@@ -74,53 +71,49 @@ const ProjectCard = ({ project, index }: { project: typeof projects[0], index: n
 
 export const SelectedWorks = () => {
   return (
-    <section className="bg-bg py-12 md:py-16">
-      <div className="max-w-[1200px] mx-auto px-6 md:px-10 lg:px-16">
-        {/* Header */}
+    <section id="search" className="bg-bg py-12 md:py-16">
+      <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-16">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1] }}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 md:mb-16"
+          className="mb-12 flex flex-col gap-6 md:mb-16 md:flex-row md:items-end md:justify-between"
         >
           <div className="max-w-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-px bg-stroke" />
-              <span className="text-xs text-muted-text uppercase tracking-[0.3em] font-semibold">Selected Work</span>
+            <div className="mb-4 flex items-center gap-3">
+              <div className="h-px w-8 bg-stroke" />
+              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-text">
+                Selected Work
+              </span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-medium tracking-tight mb-4">
+            <h2 className="mb-4 text-4xl font-medium tracking-tight md:text-6xl">
               Featured <span className="font-serif italic">projects</span>
             </h2>
-            <p className="text-muted-text text-lg font-light">
-              A selection of projects I've worked on, from concept to launch.
+            <p className="text-lg font-light text-muted-text">
+              A selection of projects I&apos;ve worked on, from concept to launch.
             </p>
           </div>
 
-          <Button 
-            variant="outline" 
-            className="hidden md:inline-flex rounded-full px-8 h-12 border-stroke hover:border-accent group relative overflow-hidden transition-all duration-300"
-          >
+          <Button variant="outline" className="group hidden h-12 px-8 md:inline-flex">
             <span className="relative z-10 flex items-center gap-2">
               View all work
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </span>
-            {/* Gradient hover border ring effect simulated via border transition */}
           </Button>
         </motion.div>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6">
-          {projects.map((project, i) => (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-12 md:gap-6">
+          {projects.map((project, index) => (
             <motion.div
               key={project.slug}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.8, delay: i * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-              className={`group relative overflow-hidden bg-surface border border-stroke rounded-3xl aspect-[4/3] ${project.span} md:h-full`}
+              transition={{ duration: 0.8, delay: index * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+              className={`group relative aspect-[4/3] overflow-hidden rounded-3xl border border-stroke bg-surface ${project.span} md:h-full`}
             >
-              <ProjectCard project={project} index={i} />
+              <ProjectCard project={project} />
             </motion.div>
           ))}
         </div>
