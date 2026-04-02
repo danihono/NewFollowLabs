@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Voxel Laptop — Follow Labs</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#f0f0f0; width:100vw; height:100vh; overflow:hidden; }
+  #wrap { width:100%; height:100vh; position:relative; cursor:grab; }
+  canvas { width:100%; height:100%; display:block; }
+  .label-bottom {
+    position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+    letter-spacing:0.3em; font-family:monospace; font-size:10px;
+    color:#999; pointer-events:none;
+  }
+  .label-top {
+    position:absolute; top:16px; left:50%; transform:translateX(-50%);
+    font-family:monospace; font-size:9px; color:#bbb;
+    pointer-events:none; letter-spacing:0.1em;
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="cv"></canvas>
+  <div class="label-bottom">FOLLOW LABS</div>
+  <div class="label-top">clique e arraste para girar</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  const wrap=document.getElementById('wrap');
+  const cv=document.getElementById('cv');
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+
+  const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+  renderer.setSize(W,H);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setClearColor(0xf0f0f0,1);
+
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(35,W/H,0.1,600);
+  camera.position.set(0,4,55);
+  camera.lookAt(0,0,0);
+
+  scene.add(new THREE.AmbientLight(0xffffff,0.9));
+  const key=new THREE.DirectionalLight(0xffffff,0.8);
+  key.position.set(10,30,30);scene.add(key);
+  const fill=new THREE.DirectionalLight(0xffffff,0.5);
+  fill.position.set(-15,10,-20);scene.add(fill);
+  const top=new THREE.DirectionalLight(0xffffff,0.4);
+  top.position.set(0,40,0);scene.add(top);
+  const screenGlow=new THREE.PointLight(0xddaa22,2.0,60);
+  screenGlow.position.set(0,2,8);scene.add(screenGlow);
+
+  const VS=0.9,G=0.08,U=VS+G;
+  const vlist=[];
+  function add(x,y,z,col){vlist.push({x:x*U,y:y*U,z:z*U,r:col.r,g:col.g,b:col.b});}
+
+  const BODY =new THREE.Color(0x2a2a2a);
+  const BODYM=new THREE.Color(0x333333);
+  const EDGE =new THREE.Color(0x1a1a1a);
+  const BEZEL=new THREE.Color(0x141414);
+  const SCRBG=new THREE.Color(0x0c0c00);
+  const BASEG=new THREE.Color(0x1e1e08);
+  const BASE =new THREE.Color(0x2a2a10);
+  const HINGE=new THREE.Color(0x111111);
+  const WHITE=new THREE.Color(1,1,1);
+  const rng=(s)=>{let v=Math.sin(s*127.1+311.7)*43758.5453;return v-Math.floor(v);};
+
+  // BASE
+  for(let x=-12;x<=12;x++)
+    for(let y=0;y<=2;y++)
+      for(let z=0;z<=5;z++){
+        let c=BODYM;
+        if(y===0||Math.abs(x)===12||z===5)c=EDGE;
+        if(y===2)c=BODY;
+        add(x,y,z,c);
+      }
+  for(let x=-12;x<=12;x++)for(let z=0;z<=5;z++)add(x,3,z,BODY);
+  for(let x=-11;x<=11;x+=2)add(x,3,1,BODYM);
+  for(let x=-10;x<=10;x+=2)add(x,3,2,BODYM);
+  for(let x=-11;x<=11;x+=2)add(x,3,3,BODYM);
+  for(let x=-4;x<=4;x++)add(x,3,4,BODYM);
+  for(let x=-10;x<=10;x++)for(let z=-1;z<=0;z++)add(x,3,z,BASEG);
+  for(let x=-5;x<=5;x++)add(x,3,-1,BASE);
+  for(let x=-12;x<=12;x++){add(x,3,0,HINGE);add(x,4,0,HINGE);}
+
+  // SCREEN
+  for(let x=-12;x<=12;x++)for(let y=4;y<=20;y++)add(x,y,-1,BEZEL);
+  for(let x=-12;x<=12;x++){add(x,4,0,BEZEL);add(x,20,0,BEZEL);}
+  for(let y=4;y<=20;y++){add(-12,y,0,BEZEL);add(12,y,0,BEZEL);}
+  for(let x=-11;x<=11;x++)
+    for(let y=5;y<=19;y++){
+      const r=rng(x*97+y*13),r2=rng(x*31+y*71);
+      if(r<0.07)add(x,y,0,SCRBG);
+      else if(r<0.55)add(x,y,0,new THREE.Color().setHSL(0.12+r2*0.06,0.95,0.28+r2*0.28));
+      else add(x,y,0,new THREE.Color().setHSL(0.13+r2*0.04,0.75,0.10+r2*0.12));
+    }
+
+  // TEXT
+  const F3={
+    F:[[0,5],[1,5],[2,5],[0,4],[1,4],[0,3],[0,2],[0,1],[0,0]],
+    O:[[0,5],[1,5],[2,5],[0,4],[2,4],[0,3],[2,3],[0,2],[2,2],[0,1],[1,1],[2,1]],
+    L:[[0,5],[0,4],[0,3],[0,2],[0,1],[0,0],[1,0],[2,0]],
+    W:[[0,5],[2,5],[0,4],[1,4],[2,4],[0,3],[2,3],[0,2],[2,2],[0,1],[2,1]],
+    A:[[1,5],[0,4],[2,4],[0,3],[1,3],[2,3],[0,2],[2,2],[0,1],[2,1]],
+    B:[[0,5],[1,5],[0,4],[2,4],[0,3],[1,3],[0,2],[2,2],[0,1],[1,1]],
+    S:[[1,5],[2,5],[0,4],[1,3],[2,2],[0,1],[1,0],[2,0]],
+  };
+  function drawF3(word,sx,sy){
+    let cx=sx;
+    for(const ch of word){
+      for(const[fx,fy]of(F3[ch]||[])){
+        const wx=cx+fx,wy=sy+fy;
+        if(wx>=-11&&wx<=11&&wy>=5&&wy<=19)add(wx,wy,0,WHITE);
+      }
+      cx+=4;
+    }
+  }
+  drawF3('FOLLOW',-11,11);
+  drawF3('LABS',-7,5);
+
+  // MESH
+  const N=vlist.length;
+  const geo=new THREE.BoxGeometry(VS,VS,VS);
+  const mat=new THREE.MeshStandardMaterial({roughness:0.55,metalness:0.05,vertexColors:true});
+  const imesh=new THREE.InstancedMesh(geo,mat,N);
+  imesh.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(N*3),3);
+  const home=new Float32Array(N*3);
+  const curr=new Float32Array(N*3);
+  const scat=new Float32Array(N*3);
+  const dummy=new THREE.Object3D();
+  const OY=-9;
+
+  vlist.forEach((v,i)=>{
+    home[i*3]=v.x;home[i*3+1]=v.y+OY*U;home[i*3+2]=v.z;
+    scat[i*3]=v.x+(Math.random()-.5)*110;
+    scat[i*3+1]=v.y+OY*U+(Math.random()-.5)*110;
+    scat[i*3+2]=v.z+(Math.random()-.5)*110;
+    curr[i*3]=scat[i*3];curr[i*3+1]=scat[i*3+1];curr[i*3+2]=scat[i*3+2];
+    imesh.instanceColor.setXYZ(i,v.r,v.g,v.b);
+    dummy.position.set(curr[i*3],curr[i*3+1],curr[i*3+2]);
+    dummy.updateMatrix();
+    imesh.setMatrixAt(i,dummy.matrix);
+  });
+  imesh.instanceMatrix.needsUpdate=true;
+  imesh.instanceColor.needsUpdate=true;
+  scene.add(imesh);
+
+  // DRAG ROTATE
+  let isDragging=false,prevX=0,prevY=0,rotY=0,rotX=0.1,velY=0,velX=0;
+  wrap.addEventListener('mousedown',e=>{isDragging=true;prevX=e.clientX;prevY=e.clientY;velY=0;velX=0;wrap.style.cursor='grabbing';e.preventDefault();});
+  window.addEventListener('mouseup',()=>{isDragging=false;wrap.style.cursor='grab';});
+  window.addEventListener('mousemove',e=>{
+    if(!isDragging)return;
+    const dx=e.clientX-prevX,dy=e.clientY-prevY;
+    velY=dx*0.007;velX=dy*0.005;
+    rotY+=velY;rotX+=velX;
+    rotX=Math.max(-1.2,Math.min(1.2,rotX));
+    prevX=e.clientX;prevY=e.clientY;
+  });
+  wrap.addEventListener('touchstart',e=>{isDragging=true;prevX=e.touches[0].clientX;prevY=e.touches[0].clientY;velY=0;velX=0;},{passive:true});
+  window.addEventListener('touchend',()=>isDragging=false);
+  window.addEventListener('touchmove',e=>{
+    if(!isDragging)return;
+    const dx=e.touches[0].clientX-prevX,dy=e.touches[0].clientY-prevY;
+    velY=dx*0.007;velX=dy*0.005;
+    rotY+=velY;rotX+=velX;
+    rotX=Math.max(-1.2,Math.min(1.2,rotX));
+    prevX=e.touches[0].clientX;prevY=e.touches[0].clientY;
+  },{passive:true});
+
+  // HOVER REPULSION
+  const mouse=new THREE.Vector2(9999,9999);
+  const rc=new THREE.Raycaster();
+  wrap.addEventListener('mousemove',e=>{
+    if(isDragging){mouse.set(9999,9999);return;}
+    const r=wrap.getBoundingClientRect();
+    mouse.x=((e.clientX-r.left)/W)*2-1;
+    mouse.y=-((e.clientY-r.top)/H)*2+1;
+  });
+  wrap.addEventListener('mouseleave',()=>mouse.set(9999,9999));
+
+  const REPEL=9;
+  const ray=new THREE.Ray(),cpt=new THREE.Vector3(),dir=new THREE.Vector3(),swrl=new THREE.Vector3(),tv=new THREE.Vector3();
+  const t0=performance.now();let lt=t0;
+
+  function animate(){
+    requestAnimationFrame(animate);
+    const now=performance.now();
+    const dt=Math.min((now-lt)/1000,0.05);lt=now;
+    const el=(now-t0)/1000;
+    const prog=Math.min(el/2.5,1);
+    const ease=1-Math.pow(1-prog,3);
+
+    if(!isDragging){
+      velY*=0.88;velX*=0.88;
+      rotY+=velY;rotX+=velX;
+      rotX=Math.max(-1.2,Math.min(1.2,rotX));
+    }
+    imesh.rotation.y=rotY;
+    imesh.rotation.x=rotX;
+    imesh.position.y=Math.sin(el*0.5)*0.15;
+
+    rc.setFromCamera(mouse,camera);
+    const inv=new THREE.Matrix4().copy(imesh.matrixWorld).invert();
+    ray.origin.copy(rc.ray.origin).applyMatrix4(inv);
+    ray.direction.copy(rc.ray.direction).transformDirection(inv);
+
+    for(let i=0;i<N;i++){
+      const hx=home[i*3],hy=home[i*3+1],hz=home[i*3+2];
+      let tx=hx,ty=hy,tz=hz;
+      if(prog>0.8){
+        tv.set(hx,hy,hz);
+        ray.closestPointToPoint(tv,cpt);
+        const dx=hx-cpt.x,dy=hy-cpt.y,dz=hz-cpt.z;
+        const d=Math.sqrt(dx*dx+dy*dy+dz*dz);
+        if(d<REPEL){
+          const len=d||0.001;
+          dir.set(dx/len,dy/len,dz/len);
+          swrl.crossVectors(dir,ray.direction).normalize();
+          const f=Math.pow((REPEL-d)/REPEL,1.8)*10;
+          tx+=dir.x*f+swrl.x*f*0.3;
+          ty+=dir.y*f+swrl.y*f*0.3;
+          tz+=dir.z*f+swrl.z*f*0.3;
+        }
+      }
+      const fx=scat[i*3]+(tx-scat[i*3])*ease;
+      const fy=scat[i*3+1]+(ty-scat[i*3+1])*ease;
+      const fz=scat[i*3+2]+(tz-scat[i*3+2])*ease;
+      curr[i*3]+=(fx-curr[i*3])*dt*13;
+      curr[i*3+1]+=(fy-curr[i*3+1])*dt*13;
+      curr[i*3+2]+=(fz-curr[i*3+2])*dt*13;
+      dummy.position.set(curr[i*3],curr[i*3+1],curr[i*3+2]);
+      dummy.updateMatrix();
+      imesh.setMatrixAt(i,dummy.matrix);
+    }
+    imesh.instanceMatrix.needsUpdate=true;
+    screenGlow.intensity=2.0+Math.sin(el*1.3)*0.4;
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>
