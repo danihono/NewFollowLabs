@@ -1,6 +1,8 @@
+import React, { useCallback, useState } from "react";
 import { FadeUp } from "./FadeUp";
 import { motion } from "motion/react";
 import { Cpu, BarChart, Users, Target } from "lucide-react";
+import { GoldenParticleText } from "./GoldenParticleText";
 
 const SolutionItem = ({ icon: Icon, title, desc, delay }: any) => (
   <FadeUp delay={delay} className="p-8 border-b border-white/5 md:border-r last:border-r-0">
@@ -11,6 +13,25 @@ const SolutionItem = ({ icon: Icon, title, desc, delay }: any) => (
 );
 
 export const Solutions = () => {
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMouse({
+      x: ((e.clientX - rect.left) / rect.width) * 2 - 1,
+      y: -((e.clientY - rect.top) / rect.height) * 2 + 1,
+    });
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.touches[0];
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMouse({
+      x: ((touch.clientX - rect.left) / rect.width) * 2 - 1,
+      y: -((touch.clientY - rect.top) / rect.height) * 2 + 1,
+    });
+  }, []);
+
   return (
     <section className="py-24">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
@@ -49,19 +70,35 @@ export const Solutions = () => {
 
         {/* Cinematic visual */}
         <FadeUp delay={0.5} className="mt-20 relative aspect-[21/9] rounded-[40px] overflow-hidden">
-          <img 
-            src="https://picsum.photos/seed/tech-nature/1920/820?grayscale" 
-            alt="Cinematic Ecosystem" 
+          <img
+            src="https://picsum.photos/seed/tech-nature/1920/820?grayscale"
+            alt="Cinematic Ecosystem"
             className="w-full h-full object-cover opacity-40 grayscale"
             referrerPolicy="no-referrer"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-20 h-20 rounded-full border border-white/20 flex items-center justify-center mb-4 mx-auto backdrop-blur-sm">
-                <div className="w-3 h-3 bg-accent rounded-full animate-pulse" />
+
+          {/* Interactive golden particle text */}
+          <div
+            className="absolute inset-0 cursor-none"
+            onMouseMove={handleMouseMove}
+            onTouchMove={handleTouchMove}
+          >
+            <GoldenParticleText
+              text="FOLLOW LABS"
+              mouseX={mouse.x}
+              mouseY={mouse.y}
+              className="absolute inset-0 w-full h-full"
+            />
+          </div>
+
+          {/* Pulse dot + label */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="text-center" style={{ marginTop: "38%" }}>
+              <div className="w-12 h-12 rounded-full border border-white/15 flex items-center justify-center mb-3 mx-auto backdrop-blur-sm">
+                <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
               </div>
-              <p className="text-xs uppercase tracking-[0.4em] text-white/60">Intelligence in Motion</p>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-white/40">Intelligence in Motion</p>
             </div>
           </div>
         </FadeUp>

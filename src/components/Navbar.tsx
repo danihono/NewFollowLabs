@@ -159,56 +159,58 @@ export const Navbar = () => {
         className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4"
         aria-label="Floating navigation"
       >
-        <div className="pointer-events-none absolute bottom-1 h-28 w-[24rem] max-w-[calc(100vw-2rem)] toolbar-ambient" />
+        <div className="pointer-events-none absolute bottom-1 h-28 w-[22rem] max-w-[calc(100vw-2rem)] toolbar-ambient sm:w-[24.5rem]" />
 
         <div className="floating-toolbar">
           <div className="toolbar-noise" />
 
-          <div ref={containerRef} className="relative z-10 flex items-center gap-2 p-2">
-            {indicator.width > 0 && (
-              <motion.div
-                className="toolbar-indicator"
-                animate={{
-                  x: indicator.x,
-                  width: indicator.width,
-                  height: indicator.height,
-                }}
-                transition={{
-                  duration: 0.7,
-                  ease: [0.34, 1.2, 0.64, 1],
-                }}
-              >
-                <span className="toolbar-indicator-glow" />
-                <span className="toolbar-indicator-clip">
-                  <span className="toolbar-indicator-gradient" />
-                </span>
-                <span className="toolbar-indicator-plate" />
-              </motion.div>
-            )}
+          <div className="relative z-10 flex items-center gap-1.5 p-1.5 sm:gap-2 sm:p-2">
+            <div ref={containerRef} className="toolbar-nav-cluster">
+              {indicator.width > 0 && (
+                <motion.div
+                  className="toolbar-indicator"
+                  animate={{
+                    x: indicator.x,
+                    width: indicator.width,
+                    height: indicator.height,
+                  }}
+                  transition={{
+                    duration: 0.7,
+                    ease: [0.34, 1.2, 0.64, 1],
+                  }}
+                >
+                  <span className="toolbar-indicator-glow" />
+                  <span className="toolbar-indicator-clip">
+                    <span className="toolbar-indicator-gradient" />
+                  </span>
+                  <span className="toolbar-indicator-plate" />
+                </motion.div>
+              )}
 
-            {navItems.map((item, index) => {
-              const Icon = item.icon;
+              {navItems.map((item, index) => {
+                const Icon = item.icon;
 
-              return (
-                <Fragment key={item.id}>
-                  <button
-                    ref={(node) => {
-                      buttonRefs.current[item.id] = node;
-                    }}
-                    type="button"
-                    className="toolbar-action"
-                    data-active={activeId === item.id}
-                    aria-current={activeId === item.id ? "page" : undefined}
-                    onClick={() => handleNavigate(item.id)}
-                  >
-                    <Icon className="size-[1.05rem]" />
-                    <span className="toolbar-label">{item.label}</span>
-                  </button>
+                return (
+                  <Fragment key={item.id}>
+                    <button
+                      ref={(node) => {
+                        buttonRefs.current[item.id] = node;
+                      }}
+                      type="button"
+                      className="toolbar-action toolbar-action-nav"
+                      data-active={activeId === item.id}
+                      aria-current={activeId === item.id ? "page" : undefined}
+                      onClick={() => handleNavigate(item.id)}
+                    >
+                      <Icon className="size-[1.05rem]" />
+                      <span className="toolbar-label">{item.label}</span>
+                    </button>
 
-                  {index < navItems.length - 1 && <div className="toolbar-divider" aria-hidden="true" />}
-                </Fragment>
-              );
-            })}
+                    {index < navItems.length - 1 && <div className="toolbar-divider" aria-hidden="true" />}
+                  </Fragment>
+                );
+              })}
+            </div>
 
             <div className="toolbar-divider" aria-hidden="true" />
 
@@ -229,7 +231,7 @@ export const Navbar = () => {
             >
               <button
                 type="button"
-                className="toolbar-action w-[3.6rem] justify-center px-0"
+                className="toolbar-action toolbar-action-theme"
                 aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
                 onClick={handleThemeToggle}
               >
