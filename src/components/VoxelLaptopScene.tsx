@@ -13,7 +13,16 @@ type Voxel = {
 const VOXEL_SIZE = 0.9;
 const GAP = 0.08;
 const UNIT = VOXEL_SIZE + GAP;
-const REPEL_RADIUS = 9;
+const HOVER_LIFT = UNIT * 5.5;
+const HOVER_SCALE = 2.2;
+const BASE_BACK_Z = 0;
+const BASE_FRONT_Z = 11;
+const BASE_BODY_TOP_Y = 1;
+const BASE_DECK_Y = 2;
+const HINGE_TOP_Y = BASE_DECK_Y + 1;
+const SCREEN_TOP_Y = 19;
+const SCREEN_INNER_BOTTOM_Y = HINGE_TOP_Y + 1;
+const SCREEN_INNER_TOP_Y = SCREEN_TOP_Y - 1;
 
 export const VoxelLaptopScene = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,15 +39,15 @@ export const VoxelLaptopScene = () => {
     const renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
-      alpha: false,
+      alpha: true,
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0xf0f0f0, 1);
+    renderer.setClearColor(0x000000, 0);
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 600);
     camera.position.set(0, 4, 55);
-    camera.lookAt(0, 0, 0);
+    camera.lookAt(-18, 0, 0);
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.9));
 
@@ -54,7 +63,7 @@ export const VoxelLaptopScene = () => {
     topLight.position.set(0, 40, 0);
     scene.add(topLight);
 
-    const screenGlow = new THREE.PointLight(0x20242c, 0.75, 48);
+    const screenGlow = new THREE.PointLight(0x0a2fff, 0.75, 48);
     screenGlow.position.set(0, 2, 8);
     scene.add(screenGlow);
 
@@ -74,26 +83,38 @@ export const VoxelLaptopScene = () => {
     const BODY_MID = new THREE.Color(0x333333);
     const EDGE = new THREE.Color(0x1a1a1a);
     const BEZEL = new THREE.Color(0x141414);
-    const SCREEN_BG = new THREE.Color(0x08090b);
     const BASE_GLOW = new THREE.Color(0x101216);
     const BASE = new THREE.Color(0x171a20);
     const HINGE = new THREE.Color(0x111111);
-    const WHITE = new THREE.Color(1, 1, 1);
 
-    const seededNoise = (seed: number) => {
-      const value = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-      return value - Math.floor(value);
-    };
+    // IDE screen palette (Dracula-inspired)
+    const SCR_BG      = new THREE.Color(0x0d1117);
+    const SCR_TITLE   = new THREE.Color(0x010409);
+    const SCR_TAB     = new THREE.Color(0x161b22);
+    const SCR_TAB_ACT = new THREE.Color(0x1f2a3a);
+    const SCR_LINE_HL = new THREE.Color(0x1c2128);
+    const SCR_STATUS  = new THREE.Color(0x1e3a5f);
+    const SCR_LINENUM = new THREE.Color(0x3d444d);
+    const DOT_R       = new THREE.Color(0xff5f57);
+    const DOT_Y       = new THREE.Color(0xffbd2e);
+    const DOT_G       = new THREE.Color(0x28c840);
+    const KW          = new THREE.Color(0xbd93f9);
+    const IDENT       = new THREE.Color(0xf8f8f2);
+    const FN          = new THREE.Color(0x8be9fd);
+    const STR         = new THREE.Color(0xf1fa8c);
+    const CMT         = new THREE.Color(0x6272a4);
+    const NUM         = new THREE.Color(0xffb86c);
+    const CURSOR_C    = new THREE.Color(0xf8f8f2);
+
+    let cursorVoxelIndex = -1;
+    let cursorOn = true;
 
     for (let x = -12; x <= 12; x += 1) {
-      for (let y = 0; y <= 2; y += 1) {
-        for (let z = 0; z <= 5; z += 1) {
+      for (let y = 0; y <= BASE_BODY_TOP_Y; y += 1) {
+        for (let z = BASE_BACK_Z; z <= BASE_FRONT_Z; z += 1) {
           let color = BODY_MID;
-          if (y === 0 || Math.abs(x) === 12 || z === 5) {
+          if (y === 0 || Math.abs(x) === 12 || z === BASE_FRONT_Z) {
             color = EDGE;
-          }
-          if (y === 2) {
-            color = BODY;
           }
           addVoxel(x, y, z, color);
         }
@@ -101,101 +122,89 @@ export const VoxelLaptopScene = () => {
     }
 
     for (let x = -12; x <= 12; x += 1) {
-      for (let z = 0; z <= 5; z += 1) {
-        addVoxel(x, 3, z, BODY);
+      for (let z = BASE_BACK_Z; z <= BASE_FRONT_Z; z += 1) {
+        addVoxel(x, BASE_DECK_Y, z, BODY);
       }
     }
 
     for (let x = -11; x <= 11; x += 2) {
-      addVoxel(x, 3, 1, BODY_MID);
-      addVoxel(x, 3, 3, BODY_MID);
+      addVoxel(x, BASE_DECK_Y, 1, BODY_MID);
+      addVoxel(x, BASE_DECK_Y, 3, BODY_MID);
     }
     for (let x = -10; x <= 10; x += 2) {
-      addVoxel(x, 3, 2, BODY_MID);
+      addVoxel(x, BASE_DECK_Y, 2, BODY_MID);
     }
     for (let x = -4; x <= 4; x += 1) {
-      addVoxel(x, 3, 4, BODY_MID);
+      addVoxel(x, BASE_DECK_Y, 4, BODY_MID);
     }
     for (let x = -10; x <= 10; x += 1) {
       for (let z = -1; z <= 0; z += 1) {
-        addVoxel(x, 3, z, BASE_GLOW);
+        addVoxel(x, BASE_DECK_Y, z, BASE_GLOW);
       }
     }
     for (let x = -5; x <= 5; x += 1) {
-      addVoxel(x, 3, -1, BASE);
+      addVoxel(x, BASE_DECK_Y, -1, BASE);
     }
     for (let x = -12; x <= 12; x += 1) {
-      addVoxel(x, 3, 0, HINGE);
-      addVoxel(x, 4, 0, HINGE);
+      addVoxel(x, BASE_DECK_Y, 0, HINGE);
+      addVoxel(x, HINGE_TOP_Y, 0, HINGE);
     }
 
     for (let x = -12; x <= 12; x += 1) {
-      for (let y = 4; y <= 20; y += 1) {
+      for (let y = HINGE_TOP_Y; y <= SCREEN_TOP_Y; y += 1) {
         addVoxel(x, y, -1, BEZEL);
       }
     }
     for (let x = -12; x <= 12; x += 1) {
-      addVoxel(x, 4, 0, BEZEL);
-      addVoxel(x, 20, 0, BEZEL);
+      addVoxel(x, HINGE_TOP_Y, 0, BEZEL);
+      addVoxel(x, SCREEN_TOP_Y, 0, BEZEL);
     }
-    for (let y = 4; y <= 20; y += 1) {
+    for (let y = HINGE_TOP_Y; y <= SCREEN_TOP_Y; y += 1) {
       addVoxel(-12, y, 0, BEZEL);
       addVoxel(12, y, 0, BEZEL);
     }
+    const getScreenColor = (x: number, y: number): THREE.Color => {
+      if (y === 18) {
+        if (x === -8) return DOT_R;
+        if (x === -6) return DOT_Y;
+        if (x === -4) return DOT_G;
+        return SCR_TITLE;
+      }
+      if (y === 17) return x <= -2 ? SCR_TAB_ACT : SCR_TAB;
+      if (y === 4)  return SCR_STATUS;
+
+      const isHL   = y === 11;
+      const lineBg = isHL ? SCR_LINE_HL : SCR_BG;
+
+      if (x <= -10) return lineBg;
+      if (x <= -8)  return isHL ? SCR_LINE_HL : SCR_LINENUM;
+
+      const col = x + 7; // 0..18
+
+      const rows: Record<number, THREE.Color[]> = {
+        16: [KW,KW,KW,KW,KW,KW,SCR_BG,IDENT,SCR_BG,FN,FN,FN,FN,FN,FN,SCR_BG,IDENT,SCR_BG,KW],
+        15: [STR,STR,STR,STR,STR,STR,STR,STR,STR,STR,STR,STR,STR,STR,STR,STR,STR,STR,STR],
+        14: [SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG],
+        13: [KW,KW,KW,KW,KW,SCR_BG,IDENT,IDENT,IDENT,IDENT,IDENT,SCR_BG,IDENT,SCR_BG,KW,KW,KW,SCR_BG,SCR_BG],
+        12: [FN,FN,IDENT,FN,FN,FN,FN,FN,FN,IDENT,IDENT,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG],
+        11: [FN,FN,FN,FN,FN,IDENT,SCR_LINE_HL,STR,STR,STR,STR,STR,STR,STR,STR,SCR_LINE_HL,CURSOR_C,SCR_LINE_HL,SCR_LINE_HL],
+        10: [CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT,CMT],
+         9: [IDENT,IDENT,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG],
+         8: [FN,FN,FN,FN,FN,IDENT,FN,FN,FN,IDENT,IDENT,SCR_BG,STR,STR,STR,STR,SCR_BG,IDENT,IDENT],
+         7: [SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG],
+         6: [FN,FN,FN,FN,FN,FN,IDENT,SCR_BG,NUM,NUM,NUM,NUM,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG],
+         5: [IDENT,IDENT,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG,SCR_BG],
+      };
+
+      return rows[y]?.[col] ?? lineBg;
+    };
+
     for (let x = -11; x <= 11; x += 1) {
-      for (let y = 5; y <= 19; y += 1) {
-        const noiseA = seededNoise(x * 97 + y * 13);
-        const noiseB = seededNoise(x * 31 + y * 71);
-        if (noiseA < 0.07) {
-          addVoxel(x, y, 0, SCREEN_BG);
-        } else if (noiseA < 0.55) {
-          addVoxel(x, y, 0, new THREE.Color().setHSL(0.62 + noiseB * 0.02, 0.08, 0.08 + noiseB * 0.08));
-        } else {
-          addVoxel(x, y, 0, new THREE.Color().setHSL(0.62 + noiseB * 0.02, 0.06, 0.03 + noiseB * 0.04));
-        }
+      for (let y = SCREEN_INNER_BOTTOM_Y; y <= SCREEN_INNER_TOP_Y; y += 1) {
+        if (x === 9 && y === 11) cursorVoxelIndex = voxels.length;
+        addVoxel(x, y, 0, getScreenColor(x, y));
       }
     }
-
-    const glyphs: Record<string, Array<[number, number]>> = {
-      F: [
-        [0, 5], [1, 5], [2, 5], [0, 4], [1, 4], [0, 3], [0, 2], [0, 1], [0, 0],
-      ],
-      O: [
-        [0, 5], [1, 5], [2, 5], [0, 4], [2, 4], [0, 3], [2, 3], [0, 2], [2, 2], [0, 1], [1, 1], [2, 1],
-      ],
-      L: [
-        [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 0], [2, 0],
-      ],
-      W: [
-        [0, 5], [2, 5], [0, 4], [1, 4], [2, 4], [0, 3], [2, 3], [0, 2], [2, 2], [0, 1], [2, 1],
-      ],
-      A: [
-        [1, 5], [0, 4], [2, 4], [0, 3], [1, 3], [2, 3], [0, 2], [2, 2], [0, 1], [2, 1],
-      ],
-      B: [
-        [0, 5], [1, 5], [0, 4], [2, 4], [0, 3], [1, 3], [0, 2], [2, 2], [0, 1], [1, 1],
-      ],
-      S: [
-        [1, 5], [2, 5], [0, 4], [1, 3], [2, 2], [0, 1], [1, 0], [2, 0],
-      ],
-    };
-
-    const drawWord = (word: string, startX: number, startY: number) => {
-      let cursor = startX;
-      for (const letter of word) {
-        for (const [gx, gy] of glyphs[letter] ?? []) {
-          const worldX = cursor + gx;
-          const worldY = startY + gy;
-          if (worldX >= -11 && worldX <= 11 && worldY >= 5 && worldY <= 19) {
-            addVoxel(worldX, worldY, 0, WHITE);
-          }
-        }
-        cursor += 4;
-      }
-    };
-
-    drawWord("FOLLOW", -11, 11);
-    drawWord("LABS", -7, 5);
 
     const count = voxels.length;
     const geometry = new THREE.BoxGeometry(VOXEL_SIZE, VOXEL_SIZE, VOXEL_SIZE);
@@ -210,6 +219,7 @@ export const VoxelLaptopScene = () => {
     const home = new Float32Array(count * 3);
     const scatter = new Float32Array(count * 3);
     const current = new Float32Array(count * 3);
+    const currentScale = new Float32Array(count).fill(1);
     const originYOffset = -9;
 
     voxels.forEach((voxel, index) => {
@@ -243,13 +253,8 @@ export const VoxelLaptopScene = () => {
 
     const mouse = new THREE.Vector2(9999, 9999);
     const raycaster = new THREE.Raycaster();
-    const inverseWorld = new THREE.Matrix4();
-    const localRay = new THREE.Ray();
-    const closestPoint = new THREE.Vector3();
-    const direction = new THREE.Vector3();
-    const swirl = new THREE.Vector3();
-    const point = new THREE.Vector3();
 
+    let prevHoveredInstance = -1;
     let isDragging = false;
     let previousX = 0;
     let previousY = 0;
@@ -362,10 +367,37 @@ export const VoxelLaptopScene = () => {
       mesh.rotation.x = rotationX;
       mesh.position.y = Math.sin(elapsed * 0.5) * 0.15;
 
+      let hoveredInstance = -1;
       raycaster.setFromCamera(mouse, camera);
-      inverseWorld.copy(mesh.matrixWorld).invert();
-      localRay.origin.copy(raycaster.ray.origin).applyMatrix4(inverseWorld);
-      localRay.direction.copy(raycaster.ray.direction).transformDirection(inverseWorld);
+      if (progress > 0.8) {
+        const [intersection] = raycaster.intersectObject(mesh, false);
+        hoveredInstance = intersection?.instanceId ?? -1;
+      }
+
+      // Hover color: brighten hovered voxel, reset previous
+      if (mesh.instanceColor && prevHoveredInstance !== hoveredInstance) {
+        if (prevHoveredInstance !== -1 && prevHoveredInstance !== cursorVoxelIndex) {
+          const v = voxels[prevHoveredInstance];
+          color.setRGB(v.r, v.g, v.b);
+          mesh.setColorAt(prevHoveredInstance, color);
+        }
+        if (hoveredInstance !== -1 && hoveredInstance !== cursorVoxelIndex) {
+          const v = voxels[hoveredInstance];
+          color.setRGB(
+            Math.min(1, v.r * 3 + 0.4),
+            Math.min(1, v.g * 3 + 0.4),
+            Math.min(1, v.b * 3 + 0.4),
+          );
+          mesh.setColorAt(hoveredInstance, color);
+        }
+        mesh.instanceColor.needsUpdate = true;
+        prevHoveredInstance = hoveredInstance;
+      }
+
+      const hoveredHomeX = hoveredInstance !== -1 ? home[hoveredInstance * 3] : 0;
+      const hoveredHomeY = hoveredInstance !== -1 ? home[hoveredInstance * 3 + 1] : 0;
+      const hoveredHomeZ = hoveredInstance !== -1 ? home[hoveredInstance * 3 + 2] : 0;
+      const RIPPLE_RADIUS = UNIT * 4.5;
 
       for (let index = 0; index < count; index += 1) {
         const offset = index * 3;
@@ -376,25 +408,20 @@ export const VoxelLaptopScene = () => {
         let targetX = homeX;
         let targetY = homeY;
         let targetZ = homeZ;
+        let targetScale = 1;
 
-        if (progress > 0.8) {
-          point.set(homeX, homeY, homeZ);
-          localRay.closestPointToPoint(point, closestPoint);
-
-          const deltaX = homeX - closestPoint.x;
-          const deltaY = homeY - closestPoint.y;
-          const deltaZ = homeZ - closestPoint.z;
-          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-
-          if (distance < REPEL_RADIUS) {
-            const length = distance || 0.001;
-            direction.set(deltaX / length, deltaY / length, deltaZ / length);
-            swirl.crossVectors(direction, localRay.direction).normalize();
-
-            const force = Math.pow((REPEL_RADIUS - distance) / REPEL_RADIUS, 1.8) * 10;
-            targetX += direction.x * force + swirl.x * force * 0.3;
-            targetY += direction.y * force + swirl.y * force * 0.3;
-            targetZ += direction.z * force + swirl.z * force * 0.3;
+        if (index === hoveredInstance) {
+          targetY += HOVER_LIFT;
+          targetScale = HOVER_SCALE;
+        } else if (hoveredInstance !== -1) {
+          const dx = homeX - hoveredHomeX;
+          const dy = homeY - hoveredHomeY;
+          const dz = homeZ - hoveredHomeZ;
+          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          if (dist < RIPPLE_RADIUS) {
+            const factor = (1 - dist / RIPPLE_RADIUS) ** 2;
+            targetY += HOVER_LIFT * factor * 0.45;
+            targetScale = 1 + (HOVER_SCALE - 1) * factor * 0.4;
           }
         }
 
@@ -402,17 +429,32 @@ export const VoxelLaptopScene = () => {
         const finalY = scatter[offset + 1] + (targetY - scatter[offset + 1]) * ease;
         const finalZ = scatter[offset + 2] + (targetZ - scatter[offset + 2]) * ease;
 
-        current[offset] += (finalX - current[offset]) * deltaTime * 13;
-        current[offset + 1] += (finalY - current[offset + 1]) * deltaTime * 13;
-        current[offset + 2] += (finalZ - current[offset + 2]) * deltaTime * 13;
+        const lerpSpeed = deltaTime * 16;
+        current[offset] += (finalX - current[offset]) * lerpSpeed;
+        current[offset + 1] += (finalY - current[offset + 1]) * lerpSpeed;
+        current[offset + 2] += (finalZ - current[offset + 2]) * lerpSpeed;
+
+        currentScale[index] += (targetScale - currentScale[index]) * lerpSpeed * 1.4;
 
         dummy.position.set(current[offset], current[offset + 1], current[offset + 2]);
+        dummy.scale.setScalar(currentScale[index]);
         dummy.updateMatrix();
         mesh.setMatrixAt(index, dummy.matrix);
       }
 
       mesh.instanceMatrix.needsUpdate = true;
-      screenGlow.intensity = 2 + Math.sin(elapsed * 1.3) * 0.4;
+
+      if (cursorVoxelIndex !== -1 && mesh.instanceColor) {
+        const newCursorOn = Math.floor(elapsed * 1.5) % 2 === 0;
+        if (newCursorOn !== cursorOn) {
+          cursorOn = newCursorOn;
+          color.setHex(newCursorOn ? 0xf8f8f2 : 0x1c2128);
+          mesh.setColorAt(cursorVoxelIndex, color);
+          mesh.instanceColor.needsUpdate = true;
+        }
+      }
+
+      screenGlow.intensity = 0.4 + Math.sin(elapsed * 1.3) * 0.15;
 
       renderer.render(scene, camera);
     };
@@ -436,8 +478,8 @@ export const VoxelLaptopScene = () => {
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-[#f0f0f0]">
-      <canvas ref={canvasRef} className="block h-full w-full" />
+    <div ref={containerRef} className="absolute inset-0 overflow-hidden">
+      <canvas ref={canvasRef} className="relative z-10 block h-full w-full" />
     </div>
   );
 };

@@ -69,15 +69,7 @@ export const Solutions = () => {
         </div>
 
         {/* Cinematic visual */}
-        <FadeUp delay={0.5} className="mt-20 relative aspect-[21/9] rounded-[40px] overflow-hidden">
-          <img
-            src="https://picsum.photos/seed/tech-nature/1920/820?grayscale"
-            alt="Cinematic Ecosystem"
-            className="w-full h-full object-cover opacity-40 grayscale"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50" />
-
+        <FadeUp delay={0.5} className="mt-20 relative aspect-[21/9] overflow-hidden">
           {/* Interactive golden particle text */}
           <div
             className="absolute inset-0 cursor-none"
@@ -90,16 +82,6 @@ export const Solutions = () => {
               mouseY={mouse.y}
               className="absolute inset-0 w-full h-full"
             />
-          </div>
-
-          {/* Pulse dot + label */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="text-center" style={{ marginTop: "38%" }}>
-              <div className="w-12 h-12 rounded-full border border-white/15 flex items-center justify-center mb-3 mx-auto backdrop-blur-sm">
-                <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
-              </div>
-              <p className="text-[10px] uppercase tracking-[0.4em] text-white/40">Intelligence in Motion</p>
-            </div>
           </div>
         </FadeUp>
       </div>
